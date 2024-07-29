@@ -1,0 +1,19 @@
+services:
+  app:
+    extends: shell
+    ports:
+      - "3000:3000"
+    command: npm run dev
+    depends_on:
+      install_deps:
+        condition: service_completed_successfully
+
+  install_deps:
+    extends: shell
+    command: npm install
+
+  shell:
+    image: node:20.14-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
