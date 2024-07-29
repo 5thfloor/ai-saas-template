@@ -17,3 +17,7 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+      - npm-cache:/root/.npm
+
+volumes:
+  npm-cache:
