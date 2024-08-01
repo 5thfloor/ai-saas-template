@@ -1,6 +1,7 @@
 "use client";
 
 import { AutoResizeTextarea } from "@/components/auto-resize-textarea";
+import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/button";
 import { ChatFormData, ChatMessage } from "@/lib/chat";
 import { useStreamingText } from "@/lib/hooks/use-streaming-text";
@@ -14,6 +15,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 export interface ChatProps {
   messages: ChatMessage[];
@@ -107,12 +109,20 @@ function ChatMessageItem({ message, onTextDelta }: ChatMessageItemProps) {
         {typeof message.message === "string" ? (
           message.message
         ) : (
-          <Suspense fallback={<>loading...</>}>
-            <ChatStreamingText
-              streamPromise={message.message}
-              onTextDelta={onTextDelta}
-            />
-          </Suspense>
+          <ErrorBoundary
+            fallback={
+              <div className="text-destructive">
+                Chat is temporarily unavailable. Please try again later.
+              </div>
+            }
+          >
+            <Suspense fallback={<Spinner className="h-5 w-5" />}>
+              <ChatStreamingText
+                streamPromise={message.message}
+                onTextDelta={onTextDelta}
+              />
+            </Suspense>
+          </ErrorBoundary>
         )}
       </div>
     </li>
