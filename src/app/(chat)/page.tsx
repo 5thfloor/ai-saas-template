@@ -8,31 +8,64 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { custom } from "@/custom";
-import { ChatFormData, ChatMessage } from "@/lib/chat";
-import { useState } from "react";
+import { ChatFormData, ChatMessage, ChatSession } from "@/lib/chat/types";
+import {
+  createTextStreamBuffer,
+  TextDecodeTransformStream,
+} from "@/lib/stream";
+import { useRef, useState } from "react";
+
+async function postChatMessage(data: {
+  message: string;
+  session: ChatSession | null;
+}): Promise<{ stream: ReadableStream<string>; sessionId: string }> {
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  const sessionId = res.headers.get("x-session-id");
+  if (!res.ok || !res.body || !sessionId) {
+    throw new Error("Cannot stream chat response");
+  }
+  const stream = res.body.pipeThrough(new TextDecodeTransformStream());
+  return { stream, sessionId };
+}
 
 export default function Page() {
+  const session = useRef<ChatSession | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   function handleSubmit(data: ChatFormData) {
-    // DEBUG
+    const messagePromise = postChatMessage({
+      message: data.message,
+      session: session.current,
+    }).then(({ stream, sessionId }) => {
+      if (!session.current) {
+        session.current = { id: sessionId, history: [] };
+      }
+
+      // Add user message to history
+      session.current.history.push({ role: "user", message: data.message });
+
+      // Add assistant message to history when the stream is completed
+      const buffer = createTextStreamBuffer();
+      buffer.promise.then((message) => {
+        session.current?.history.push({ role: "assistant", message });
+      });
+
+      return stream.pipeThrough(buffer.collector);
+    });
+
     setMessages((messages) => [
       ...messages,
       { id: crypto.randomUUID(), role: "user", message: data.message },
       {
         id: crypto.randomUUID(),
         role: "assistant",
-        message: (async () => {
-          await new Promise((r) => setTimeout(r, 2000));
-          return new ReadableStream({
-            async start(controller) {
-              for (let i = 0; i < 100; i++) {
-                controller.enqueue("dummy ");
-                await new Promise((r) => setTimeout(r, 100));
-              }
-            },
-          });
-        })(),
+        message: messagePromise,
       },
     ]);
   }

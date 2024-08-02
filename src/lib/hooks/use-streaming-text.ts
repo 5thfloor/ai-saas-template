@@ -8,6 +8,10 @@ export function useStreamingText(
   const [isStreaming, startTransition] = useTransition();
 
   useEffect(() => {
+    if (stream.locked) {
+      return;
+    }
+
     startTransition(async () => {
       setText("");
       const reader = stream.getReader();

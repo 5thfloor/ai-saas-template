@@ -3,7 +3,7 @@
 import { AutoResizeTextarea } from "@/components/auto-resize-textarea";
 import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/button";
-import { ChatFormData, ChatMessage } from "@/lib/chat";
+import { ChatFormData, ChatMessage } from "@/lib/chat/types";
 import { useStreamingText } from "@/lib/hooks/use-streaming-text";
 import { cn } from "@/lib/utils";
 import { CornerDownLeft } from "lucide-react";
