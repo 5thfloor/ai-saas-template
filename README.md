@@ -1,3 +1,5 @@
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2F5thfloor%2Fai-saas-template%2Ftree%2Fmain&env=OPENAI_API_KEY&project-name=my-ai-saas-project&repository-name=my-ai-saas-project&stores=[{"type":"postgres"}])
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
